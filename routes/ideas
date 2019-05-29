@@ -1,0 +1,227 @@
+Hivedesk should receive calls from clients
+all calls have a virtual number associated to identify the service the users are trying to call 
+with the virtual number, get the service associated with it 
+All virtual numbers act as identifiers for services 
+uckg service -> 0900620000 
+if req.params.vpNum === number 
+    service = uckg 
+
+    a service should contain data to be used by uckg members including
+    supported languages 
+    service name 
+    registered agents to forward calls to
+    session manager   
+
+    every session is managed at the session manager identified by a session id that does not change 
+    each session manager contains data id'd by the session id that holds data to manage a session 
+    a service also contains a pointer to its session manager that is used to handle calls for users 
+
+    the session manager is initialized when? with what data? 
+    data - session manager is initialized when needed 
+    when the first call comes in - so it is initialized with a session to make sure it does not stay longer 
+    than expected
+
+    the route handler should have access to the session manager which stores a list of all initialed session 
+    alternatively, provide access to the service manager which stores a list of active sessions that the 
+    handler can use to handle the call 
+
+    The handler is responsible for passing control to the appropriate handler and emitting the response on how
+    to handle the request
+    
+        providing the handler with access to the session should be done by 
+        providing access to the object that manages all active services 
+
+        A service is initialized when needed so the object should know how to initialize a service for 
+        a given virtual phone number and initializing with a session 
+
+        If two requests arrive at the same time, the object should be able to queue them during the initialization
+        of the service and after that initialize a session for every request and pass the handlers that the 
+        route handler should use to extract responses 
+
+
+#Try 2
+The route handler accepts identity data via req.params.vpNum and post data via req.body 
+it needs to know who to forward the action to for the session id by using getHandlerForSessionId 
+The requests the appropriate session handler for the session by maintaining a list of active sessions 
+if there is no active session, it needs to access the service
+
+each service holds a list of active session 
+by using the vpNum parameter, get the session manager object and initialize if none is available
+
+a list of all initialized services is stored by an object accessible to the handler, if a requested service 
+is not initialized, initialite the service by queueing the request then initalize a session for each queued
+request
+The service manager object is responsible for managing all initialized service and destroying them when there 
+is no session ongoing 
+It initialized the service by providing a list of queued requests and returning a session manager for all 
+queued requests 
+The service manager is initialized with a request and initialized the appropriate service data structures 
+needed to manage a session including 
+    service name to identify the service to the callers 
+    a list of accepted languages to allow session managers to configure a language preference for every call 
+    every session handler should configure the language to handler the session with 
+    a tree of action handler to be used by the session handler to handle caller 
+
+    the service manager should be exported with 0 initialized services and is in essece a managed map with 
+    methods to add a new service for every initialized service 
+
+    a service should be able to know if it's initialization is complete and notify the manager 
+
+    the manager is a map of initialized services identified by the virtual phone 
+
+
+    on the first request to service x, most likely the manager will have no service initialized 
+
+    the session managers, all encapsulaed within the service should be initialized for every request 
+
+    the handler should get access to the service manager, and using the service manager, which is statically 
+    initialized with no active session 
+
+    if the service manager is requested to provide the session manager for a certain service and the service 
+    is not already initialized, which means that the request to get the service for a given vpNum it return 
+    null, the service manager should queue the request in it's internal data structures, initialize the service,
+    use the initialized service to initialize a map of session handlers for all queued requees and finally,
+    return a session handler for every queued requests 
+
+    the handler, should use the session handler given for every session and fetch the active handler that 
+    it should use to provide a response to the users 
+
+    Once it receives a reponse, it should reply to the user and update the session handler to update it's session 
+    manager as it readies or destory the handler 
+    if it's a readying event, the session manager should use the associated serive to update the handler for 
+    the session 
+
+The handler is passed a identifier vpNum and associated post data 
+using the vpNum the handler which has access to a global service manager requests for the session handler 
+for the associated data session handler 
+Given the session handler, the handler invokes the handler with the associated data nd returned a formatted 
+xml response to give to AT 
+
+the handler session should do its' internal handler management to ensure that it returns the most up to dat handler for session 
+
+the handler requests for the active handler for the session from a service manager 
+the session should contain data and methods that the handler can call to get a response for the current session 
+
+given a session handler like 
+const sessionHandler = serviceManager.getSessionHandlerFor(vpNum, sessionId, selectedOption);
+
+the session manager should be able to identify initialized services for a given vpNum
+
+The session manager is initialized during the app initialization with empty map but with appropriate API's 
+to initialize a service manager 
+a service cannot exist without a requests 
+so the service manager service initializer is called with a request and vpnum to inialize 
+since service initialization is asynchronous, it should be able to know if a service is not initialized or it's
+currently in initialization 
+
+When a call to initalize is made, which is made by the API to get session, it should create a service shell with 
+the initializing flag set and which is reset when the initializaion if complete 
+
+The handler calls the servie manager to retrieve the session manager for a certain service nd given the data to 
+initialize if it does not exists 
+
+if there is no service initialized i.e 
+    _.find(this.initializedService, vpnum) => null 
+
+    initializeService(vpNum, request) -> service with a non empty 
+
+    which means that the service manager can not reply with a valid service id so it initialized 
+    the service and returns the initialized service 
+
+    the caller, uses the initialed service to iniitalize a session for all queued services or retrieve 
+    the session manager for the session id 
+
+
+
+Handler gets virtual phone number and payload which contains a session id, caller information among
+other identity and action information 
+Router retrieves the handler from the service manager and invokes it with payload 
+The handler invocation returns an XML 
+The service manager initialites with an empty service initialization 
+Receives the id for which to fetch a session manager for with a vpnum
+
+handler -> getHandlerForSession(vpnum, sessid);
+
+get handler for session api receives vpnum and sessid 
+create a request object by associating the vpNum with sessid 
+vpNum -> sessid 
+
+push it to a request queue maintained by the api 
+
+tries to fetch the initialized service from the service manager for the vpnum
+if service manager has it in it's data structures then return the service manager 
+else 
+ return a promise to an initializing service 
+
+ service initialization done by the service manager if it does not exist 
+
+ if( !_.find(services, serviceId))
+    return new Promise((resolve, reject) => {
+        //initialize the service 
+        const service = new Service(serviceId)
+    })
+
+service constructor given a service id 
+fetch('/services/{serviceId}) -> snapshot 
+
+given the snapshot initialize a few services 
+
+start by initializing the known data structures 
+ - service name 
+ - sessions list 
+ - accepted languages 
+ - registered agents 
+
+after initialization, if there is a session to initialize initialize it 
+
+session list 
+ sessionId -> sessionObject 
+
+Session initialized using an exported function in services 
+
+class Services {
+    init(serviceId);
+    name,
+    acceptedLanguages,
+    sessionList,
+    getSession for id 
+}
+
+get session for session id 
+check if there is a session if there is, return the a
+
+
+router requests for a handler for (vpNum, sessid) from service manager 
+
+service manager checks for the existence of an initialized service 
+if service 
+    return the service 
+if service is in initializing state, queue the request 
+if no service 
+ create the request element 
+ push request to queue 
+ start the initialization of a new service 
+  
+ const service = new Service(serviceId, callback);
+
+ the callback to constructor should initialize services for all initialized services 
+ filter(services => service.serviceId = serviceId)
+
+ service provides a method to fetch a session handler given a session id 
+  the service checks if a session id exists 
+  if does -> return 
+  if not 
+   create a new default session with the session id 
+   key it to this.session 
+
+   new session manager 
+   initialized with languages, action tree, and session id 
+   set the languages 
+   create a new handler tree using action tree by initializing all nodes in the system 
+   while(node.hasChild){
+       const handler = new handler(action.service )
+   }
+
+   for every node, initialize it's children and the action object 
+   return the head to service as the pointer 
+   
