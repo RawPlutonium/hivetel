@@ -44,7 +44,8 @@ AccountManager.prototype.initializeAccount = function(accountId){
 
 AccountManager.prototype.getAccountData = function(accountId){
 
-    const accountData = _.find(this.initializedAccounts, accountId);
+    // const accountData = _.find(this.initializedAccounts, accountId);
+    const accountData = this.initializedAccounts[accountId];
 
     if( !accountData ){
         return this.initializeAccount(accountId);
