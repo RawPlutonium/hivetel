@@ -1,8 +1,8 @@
 function AppContext(){
     this.responseHeaders = {
-        apiKey: '',
+        'apiKey': 'b08af78b3e5530d1d6a6835ccedc53b44c8f1834cbccbf2aab41157a8cb892ca',
         'Content-Type': 'application/json',
-        Accept: 'application/json'
+        'Accept': 'application/xml'
     }
 }
 

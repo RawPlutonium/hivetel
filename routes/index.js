@@ -15,8 +15,6 @@ router.post('/:serviceId', function(req, res){
 
   const serviceId = req.params.serviceId;
 
-  console.log("Service id ", serviceId);
-
   const service = serviceManager.getService(serviceId);
 
   service.then(srv => {
@@ -30,9 +28,10 @@ router.post('/:serviceId', function(req, res){
     }
 
     const {headers} = response;
+
     const resp  = response.response;
 
-    res.header(headers).send(resp);
+    res.set(headers).send(resp);
   })
   
 })

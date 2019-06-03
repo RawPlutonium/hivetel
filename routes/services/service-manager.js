@@ -10,7 +10,6 @@ ServiceManager.prototype.getService = function(serviceId){
     // const service = _.find(this.initializedService, serviceId);
     const service = this.initializedService[serviceId];
     if( !service){
-        console.log("Service is absent")
         return this.initializeService(serviceId);
     }
 
