@@ -14,18 +14,6 @@ function AccountManager(){
     this.initializedAccounts = {};
 }
 
-AccountManager.prototype.getAccountData = function(accountId){
-
-    const accountData = _.find(this.initializedAccounts, accountId);
-
-    if( !accountData ){
-        return this.initializeAccount(accountId);
-    }
-
-    return new Promise((resolve, reject) => {
-        resolve(accountData);
-    });
-}
 
 AccountManager.prototype.initializeAccount = function(accountId){
     // Request for data from 'registeredNumbers/${accountId}'
@@ -50,6 +38,19 @@ AccountManager.prototype.initializeAccount = function(accountId){
     })
    
     
+}
+
+AccountManager.prototype.getAccountData = function(accountId){
+
+    const accountData = _.find(this.initializedAccounts, accountId);
+
+    if( !accountData ){
+        return this.initializeAccount(accountId);
+    }
+
+    return new Promise((resolve, reject) => {
+        resolve(accountData);
+    });
 }
 
 AccountManager.prototype.configureAccount = function(accountData){
