@@ -13,6 +13,8 @@
     "morgan": "~1.9.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-preset-es2015": "^6.24.1",
     "jasmine": "^3.4.0",
     "jasmine-object-matchers": "^0.1.0"
   }

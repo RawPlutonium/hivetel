@@ -1,5 +1,5 @@
 var express = require('express');
-const sessionManager = require('../services/session.manager');
+var serviceManager = require('./services/service-manager');
 
 var router = express.Router();
 
@@ -9,18 +9,31 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-router.post('/:virtualPhone', function(req, res){
-  const body = req.body;
-  const {sessionId} = body;
+router.post('/:serviceId', function(req, res){
+  const body = req.body; //Fetch payload
 
-  const virtualPhone = req.params.virtualPhone;
+  const serviceId = req.params.serviceId;
 
-  const manager = sessionManager.getManagerForVirtualPhone(virtualPhone);
-  const handler = manager.getHandlerForSession(sessionId);
+  console.log("Service id ", serviceId);
 
-  const response = handler.getResponse(body);
+  const service = serviceManager.getService(serviceId);
 
-  res.send({status: 'OK', ...response});
+  service.then(srv => {
+    const response = srv.handleIncomingRequest(body);
+
+    // Extract headers, statuses and stuff 
+    const {status} = response;
+
+    if( status !== "OK"){
+      console.log("Error processing request");
+    }
+
+    const {headers} = response;
+    const resp  = response.response;
+
+    res.header(headers).send(resp);
+  })
+  
 })
 
 module.exports = router;

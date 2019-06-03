@@ -5,14 +5,14 @@ describe("API Suite", function(){
         const joc = jasmine.objectContaining;
         
         const postData = {
-            name: "Test Data",
-            value: 48
+            sessionId: '01239234',
+            callerNumber: '0214389234',
         }
 
-       axios.post('http://127.0.0.1:3000/0900620000', postData)
+       axios.post('http://127.0.0.1:5000/eOrF1PGflYgVXrvCN4lK', postData)
         .then(status => {
-            console.log(status);
-            expect(status.data).toEqual(joc({status: 'OK', virtualPhone: '0900620000'}));
+            console.log(status.data);
+            expect(status.data).toEqual(joc({status: 'OK'}));
             done();
         })
         
