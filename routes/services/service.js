@@ -23,7 +23,8 @@ function Service(serviceId){
 }
 
 Service.prototype.getSession = function(sessionId, options){
-    const session = _.find(this.currentSessions, sessionId);
+    // const session = _.find(this.currentSessions, sessionId);
+    const session = this.currentSessions[sessionId];
 
     if(!session){
         console.log("Options will be here ", options);

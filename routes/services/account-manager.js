@@ -21,6 +21,8 @@ AccountManager.prototype.initializeAccount = function(accountId){
         return null;
     }
 
+    console.log("Initializing account")
+
     return new Promise((resolve, reject) => {
         db.collection('accounts').doc(accountId).get().then(accountData => {
             // Configure user account 
