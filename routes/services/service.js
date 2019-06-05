@@ -99,22 +99,20 @@ Service.prototype.handleIncomingRequest = function(payload){
         // Get the language selected 
         const language = _.nth(this.languages, dtmfDigits - 1);
 
-        console.log(language)
 
         this.configureLanguage(language, session);
         const nextHandler = this.getNextHandler(session.currentHandler, session, dtmfDigits);
-        this.setHandler(nextHandler, session);
+        this.setHandler(session, nextHandler);
         return this.formatResponse(nextHandler, session);
     }
     
 
     // Normal configuration - fetch the appropriate handler for this session
-    const {currentHandler} = session;
     const dtmfDigits = payload.dtmfDigits;
 
     // const selectedService = this.getSelectedService(currentHandler, session, dtmfDigits);
 
-    const nextHandler = this.getNextHandler(currentHandler, session, dtmfDigits);
+    const nextHandler = this.getNextHandler(handler, session, dtmfDigits);
 
     this.setHandler(session, nextHandler);
     return this.formatResponse(nextHandler, session);
@@ -122,10 +120,12 @@ Service.prototype.handleIncomingRequest = function(payload){
 
 Service.prototype.configureLanguage = function(language, session){
     // Configure the language 
-    console.log("Configuring language");
+    console.log("Configuring language to ", language);
     if( language && session){
         session.language = language;
     }
+
+    console.log("Done configuring language - session.language ", session.language);
 }
 
 Service.prototype.retryAction = function(session, config){
@@ -178,7 +178,7 @@ Service.prototype.getNextHandler = function(currentHandler, session, dtmfDigits)
         //     });
         // }
         // Iterate through all child actions and read out the say 
-        if( dtmfDigits === 0){
+        if( dtmfDigits === '0'){
             // Get an agent to call 
             return this.getAgentHandler(session);
         } 
@@ -287,8 +287,15 @@ Service.prototype.getAgentHandler = function(session){
     //  console.log("Agents ", agents);
      const callAgents = filterAgents(agents);
 
-     console.log("Call this agents ", callAgents);
-     let agentsPhones = callAgents.map(agent => agent.phoneNumber);
+    //  let agentsPhones = callAgents.map(agent => agent.phoneNumber);
+     let agentsPhones = [];
+     for(let i = 0; i < callAgents.length; ++i){
+         const agent = callAgents[i];
+         
+         const phone = agent.phoneNumber;
+
+         agentsPhones.push(phone);
+     }
 
      // Update the session with handler agents 
      const response = {
@@ -297,12 +304,13 @@ Service.prototype.getAgentHandler = function(session){
                  english: 'Please hold as we transfer your call to an active agent, thank you',
                  swahili: 'Tafadhali shikilia tunapo hamisha simu yako kwa wakala atakaye kushughulikia, asanti'
              },
-             voice: 'female'
+             voice: 'woman',
+             record: true
          },
          dial: {
              phoneNumbers: agentsPhones.join(),
              record: true,
-             maxDuration: 5
+             maxDuration: '5'
          }
      }
 
@@ -355,7 +363,10 @@ Service.prototype.formatResponse = function(response, session){
 
     // Process the dial 
     if( dial ){
-        const {dial: {phoneNumbers, maxRetries}} = dial;
+        // const {dial: {phoneNumbers, maxRetries}} = dial;
+        const phoneNumbers = dial.phoneNumbers;
+        const maxRetries = dial.maxRetries || 5;
+        console.log("Dial this ", dial);
 
         actionList = [...actionList, {
             name: 'Dial',
@@ -366,15 +377,15 @@ Service.prototype.formatResponse = function(response, session){
         }]
     }
 
-    const getDigits = Boolean(response.children || response.getDigits);
+    const getDigits = Boolean(response.children || response.getDigits );
 
     const processedResponse = getDigits ? {
         name: 'GetDigits',
         attrs: {
             finishOnKey: '#'
         },
-        children: [...actionList]
-    } : [...actionList];
+        children: [ ...actionList]
+    } :  [...actionList];
 
     res = {
         Response: [
@@ -410,7 +421,7 @@ function hasChildren(handler){
          return null;
      }
 
-     return Object.keys(handler.childre);
+     return Object.keys(handler.children);
  }
 
 module.exports = Service;

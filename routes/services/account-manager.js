@@ -21,7 +21,7 @@ AccountManager.prototype.initializeAccount = function(accountId){
         return null;
     }
 
-    console.log("Initializing account")
+    console.log("Initializing account for account id ", accountId);
 
     return new Promise((resolve, reject) => {
         db.collection('accounts').doc(accountId).get().then(accountData => {
